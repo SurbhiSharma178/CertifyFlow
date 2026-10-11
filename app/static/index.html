@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bulk Certificate Generator</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/app.js" defer></script>
+</head>
+
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Bulk Certificate Generator home">
+      <span class="brand-mark">BC</span><span>Certify<span class="brand-light">Flow</span></span>
+    </a>
+    <span class="topbar-label"><span class="status-dot"></span> Certificate Workspace</span>
+  </header>
+  <main class="page-shell">
+    <section class="hero">
+      <div class="eyebrow"><span class="eyebrow-line"></span> BULK CERTIFICATE GENERATOR</div>
+      <h1>Celebrate every<br><span>achievement.</span></h1>
+      <p class="hero-copy">Create personalized certificates for an entire group in one simple workflow. Upload your
+        recipient list, add event details, and download your certificates together.</p>
+      <div class="hero-points"><span><span class="check-icon">✓</span> Batch generation</span><span><span
+            class="check-icon">✓</span> Live progress</span><span><span class="check-icon">✓</span> One ZIP
+          download</span></div>
+    </section>
+
+    <section class="workspace">
+      <form id="job-form" class="panel form-panel">
+        <div class="panel-heading">
+          <div><span class="step-label">STEP 01</span>
+            <h2>Certificate details</h2>
+            <p>Enter the details that will appear on the certificates.</p>
+          </div>
+          <div class="heading-icon" aria-hidden="true">✦</div>
+        </div>
+        <div class="form-grid">
+          <label class="field field-full"><span>Certificate title <b>*</b></span><input id="certificate-title"
+              name="certificate_title" type="text" placeholder="e.g. Achievement" required maxlength="200"></label>
+          <label class="field field-full"><span>Event or program name <b>*</b></span><input id="event-name"
+              name="event_name" type="text" placeholder="e.g. Annual Tech Summit 2026" required maxlength="200"></label>
+          <label class="field"><span>Event date <b>*</b></span><input id="event-date" name="event_date" type="date"
+              required></label>
+          <label class="field"><span>Issued by <b>*</b></span><input id="issuer" name="issuer" type="text"
+              placeholder="e.g. Organizing Committee" required maxlength="200"></label>
+        </div>
+        <div class="section-divider"></div>
+        <div class="panel-heading upload-heading">
+          <div><span class="step-label">STEP 02</span>
+            <h2>Recipient list</h2>
+            <p>Upload a CSV file with one recipient name per row.</p>
+          </div>
+        </div>
+        <label id="drop-zone" class="drop-zone" for="csv-file">
+          <input id="csv-file" type="file" accept=".csv,text/csv" required>
+          <span class="upload-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M4 15.5v3A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5v-3"
+                stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+            </svg></span>
+          <span class="drop-title">Choose a CSV file or drag it here</span><span class="drop-subtitle">CSV format ·
+            Required column: <code>recipient_name</code></span><span id="file-meta" class="file-meta" hidden></span>
+        </label>
+        <div class="csv-help"><span class="help-icon">i</span>
+          <div><strong>CSV format example</strong>
+            <p>Your first row must contain the column heading <code>recipient_name</code>.</p>
+          </div><button type="button" id="download-sample" class="text-button">Download sample CSV ↗</button>
+        </div>
+        <div id="form-error" class="alert alert-error" role="alert" hidden></div>
+        <button id="generate-btn" class="primary-button" type="submit"><span class="button-label">Generate
+            certificates</span><span class="button-arrow" aria-hidden="true">→</span></button>
+        <p class="fine-print">Each recipient is processed separately, so one failed certificate won't stop the rest.</p>
+      </form>
+
+      <aside class="right-column">
+        <section class="panel process-panel">
+          <span class="step-label">YOUR WORKFLOW</span>
+          <h2>From list to certificates</h2>
+          <div class="workflow">
+            <div class="workflow-step"><span class="workflow-number">01</span>
+              <div><strong>Add your details</strong>
+                <p>Set the event information once.</p>
+              </div><span class="workflow-check">✓</span>
+            </div>
+            <div class="workflow-step"><span class="workflow-number">02</span>
+              <div><strong>Upload recipients</strong>
+                <p>Use a simple CSV spreadsheet.</p>
+              </div><span class="workflow-check">✓</span>
+            </div>
+            <div class="workflow-step"><span class="workflow-number">03</span>
+              <div><strong>Generate & download</strong>
+                <p>Follow progress and get a ZIP.</p>
+              </div><span class="workflow-check">✓</span>
+            </div>
+          </div>
+        </section>
+        <section id="job-panel" class="panel job-panel" hidden>
+          <div class="panel-heading job-heading">
+            <div><span class="step-label">GENERATION STATUS</span>
+              <h2 id="job-title">Preparing your job</h2>
+              <p id="job-subtitle">Your certificates will appear here.</p>
+            </div><span id="job-status" class="status-pill status-pending">Pending</span>
+          </div>
+          <div class="progress-summary">
+            <div><span class="metric-label">Progress</span><strong id="progress-value">0%</strong></div><span
+              id="processed-count" class="processed-count">0 of 0 processed</span>
+          </div>
+          <div class="progress-track" role="progressbar" aria-label="Certificate generation progress" aria-valuemin="0"
+            aria-valuemax="100" aria-valuenow="0" id="progress-track">
+            <div id="progress-fill" class="progress-fill"></div>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card"><span class="stat-dot stat-total"></span><span class="stat-label">Total</span><strong
+                id="total-count">0</strong></div>
+            <div class="stat-card"><span class="stat-dot stat-success"></span><span
+                class="stat-label">Successful</span><strong id="success-count">0</strong></div>
+            <div class="stat-card"><span class="stat-dot stat-failed"></span><span
+                class="stat-label">Failed</span><strong id="failed-count">0</strong></div>
+          </div>
+          <div id="job-message" class="job-message" aria-live="polite">Waiting to start…</div>
+          <a id="download-zip" class="primary-button download-button" href="#" hidden><span>Download all certificates
+              (.ZIP)</span><span class="button-arrow" aria-hidden="true">↓</span></a>
+          <button id="new-job-btn" class="secondary-button" type="button">Create another batch</button>
+        </section>
+        <section class="privacy-note"><span class="privacy-icon" aria-hidden="true">◈</span>
+          <p><strong>Simple and focused.</strong><br>Your CSV is used to create this batch. Only successfully generated
+            certificates are included in the ZIP download.</p>
+        </section>
+      </aside>
+    </section>
+    <footer class="footer"><span>CertifyFlow <span class="footer-muted">· Bulk Certificate
+          Generator</span></span><span>Designed for a smoother certificate workflow</span></footer>
+  </main>
+</body>
+
+</html>

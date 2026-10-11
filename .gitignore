@@ -1,0 +1,29 @@
+# Python
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Generated files
+app/generated/*
+!app/generated/.gitkeep
+
+# Test and tool caches
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
