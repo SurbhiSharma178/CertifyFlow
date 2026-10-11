@@ -5,6 +5,10 @@ bulk. A user supplies event details and a recipient list, the application create
 one PDF per recipient, stores job progress in PostgreSQL, and provides a ZIP
 download containing the successfully generated certificates.
 
+## Live application
+
+Use the deployed application at [certifyflow-zeim.onrender.com](https://certifyflow-zeim.onrender.com/).
+
 ## Features
 
 - Browser-based workflow for creating a certificate batch.
@@ -213,66 +217,9 @@ job, the ZIP contains only the successful certificates. The generated PDFs are
 also stored on disk beneath:
 
 ```text
-app/generated/bulk_certificate_generator_<job_id>/
+app/generated/CertifyFlow_<job_id>/
 ```
 
 The application does not currently expose a public endpoint for downloading an
 individual certificate; use the ZIP endpoint or inspect that job directory
 when working locally.
-
-## Important implementation and design decisions
-
-### Asynchronous batch processing
-
-`POST /jobs/` persists the job and all recipient records first, then schedules
-`process_job` as a FastAPI background task. This keeps the submission request
-fast and lets clients observe progress through a separate status endpoint.
-The background task creates a fresh database session rather than reusing the
-request session.
-
-### Per-recipient failure isolation
-
-Recipients are processed in ID order. Each certificate transitions through
-`Pending`, `Processing`, and either `Completed` or `Failed`. A generation error
-is stored on that certificate and does not stop the rest of the batch. The job
-finishes as `Completed`, `Partially Completed`, or `Failed` based on the
-aggregate outcomes.
-
-### Relational persistence and migrations
-
-`generation_jobs` stores event metadata and aggregate counters. `certificates`
-stores one row per recipient, its status, generated relative path, and any
-error message. SQLAlchemy manages the relationship, while Alembic keeps schema
-changes reproducible.
-
-### Deterministic, filesystem-safe output
-
-Each job gets an `app/generated/bulk_certificate_generator_<job_id>` directory.
-Recipient names are sanitized before becoming filenames, and the certificate
-ID is appended to avoid collisions between duplicate names. The download
-route resolves paths and verifies they remain within the generated directory
-before adding them to the ZIP.
-
-### PDF template and bundled fonts
-
-ReportLab draws an A4 landscape certificate from vector shapes and text. The
-template registers the bundled Cinzel, Allura, and Montserrat fonts, so
-generated documents do not depend on fonts installed on the host machine.
-
-### Current input surfaces
-
-The browser workflow intentionally uses CSV and sends JSON to `/jobs/`. The
-codebase also contains a multipart `POST /upload/` route intended for CSV/XLSX
-imports. It is not used by the current UI and should be treated as an
-alternative integration surface until it is covered by tests and brought into
-parity with the primary background-job workflow.
-
-## Operational notes
-
-- Keep `.env` and database credentials out of source control.
-- `app/generated/` is runtime output and is ignored by Git.
-- The current background task runs in the API process. For durable production
-  queues, retries, and horizontal scaling, replace it with a dedicated worker
-  system and external object storage.
-- Generated files are local to the application host; deploy shared storage if
-  multiple application instances must serve the same certificates.

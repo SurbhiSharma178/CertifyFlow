@@ -14,7 +14,7 @@ GENERATED_DIR= APP_DIR/"generated"
 
 
 def get_job_folder(job_id:int)->Path:
-  folder= GENERATED_DIR/f"bulk_certificate_generator_{job_id}"
+  folder= GENERATED_DIR/f"CertifyFlow_{job_id}"
   folder.mkdir(parents=True, exist_ok=True )
   return folder
 

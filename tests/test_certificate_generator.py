@@ -26,7 +26,7 @@ def test_get_job_folder_creates_job_specific_directory(tmp_path, monkeypatch):
 
     folder = certificate_generator.get_job_folder(42)
 
-    assert folder == generated_dir / "bulk_certificate_generator_42"
+    assert folder == generated_dir / "CertifyFlow_42"
     assert folder.is_dir()
 
 
@@ -51,7 +51,7 @@ def test_generate_certificate_creates_pdf_with_safe_unique_filename(
     output_path = app_dir / relative_path
 
     assert relative_path == (
-        "generated/bulk_certificate_generator_7/Aarav_Sharma_3.pdf"
+        "generated/CertifyFlow_7/Aarav_Sharma_3.pdf"
     )
     assert output_path.is_file()
     assert output_path.read_bytes().startswith(b"%PDF")
